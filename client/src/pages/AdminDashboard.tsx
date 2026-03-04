@@ -452,7 +452,17 @@ function PrizesTab() {
 }
 
 function ParticipantsTab() {
-  const { data: participants, isLoading } = trpc.raffle.getParticipants.useQuery();
+  const { data: participants, isLoading, refetch } = trpc.raffle.getParticipantsWithNumbers.useQuery();
+  const markAsSoldMutation = trpc.raffle.markNumberAsSoldManual.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Número marcado como vendido");
+    },
+    onError: () => {
+      toast.error("Error al marcar como vendido");
+    },
+  });
+  const utils = trpc.useUtils();
 
   if (isLoading) {
     return <Loader2 className="w-8 h-8 animate-spin" />;
@@ -472,16 +482,46 @@ function ParticipantsTab() {
                 <th className="text-left py-2 px-2">Nombre</th>
                 <th className="text-left py-2 px-2">Email</th>
                 <th className="text-left py-2 px-2">Teléfono</th>
+                <th className="text-left py-2 px-2">Número</th>
+                <th className="text-left py-2 px-2">Estado</th>
                 <th className="text-left py-2 px-2">Fecha</th>
+                <th className="text-left py-2 px-2">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {participants?.map((p) => (
+              {participants?.map((p: any) => (
                 <tr key={p.id} className="border-b border-border hover:bg-muted/50">
                   <td className="py-2 px-2">{p.firstName} {p.lastName}</td>
                   <td className="py-2 px-2">{p.email}</td>
                   <td className="py-2 px-2">{p.phone}</td>
+                  <td className="py-2 px-2 font-bold text-accent">{p.raffleNumber || '-'}</td>
+                  <td className="py-2 px-2">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      p.status === 'sold' ? 'bg-red-100 text-red-800' :
+                      p.status === 'reserved' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {p.status === 'sold' ? 'Vendido' : p.status === 'reserved' ? 'Reservado' : 'Disponible'}
+                    </span>
+                  </td>
                   <td className="py-2 px-2">{new Date(p.createdAt).toLocaleDateString()}</td>
+                  <td className="py-2 px-2">
+                    {p.status !== 'sold' && p.raffleNumberId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          markAsSoldMutation.mutateAsync({ raffleNumberId: p.raffleNumberId }).then(() => {
+                            utils.raffle.getNumbers.invalidate();
+                            utils.raffle.getConfig.invalidate();
+                          });
+                        }}
+                        disabled={markAsSoldMutation.isPending}
+                      >
+                        {markAsSoldMutation.isPending ? 'Guardando...' : 'Marcar vendido'}
+                      </Button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

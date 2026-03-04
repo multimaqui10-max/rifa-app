@@ -301,3 +301,43 @@ export async function getReservationsBySession(sessionId: string) {
   
   return await db.select().from(reservations).where(eq(reservations.sessionId, sessionId));
 }
+
+export async function getParticipantsWithNumbers() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get all participants with their associated raffle numbers
+  const participantsList = await db.select().from(participants).orderBy(desc(participants.createdAt));
+  
+  // For each participant, find their raffle number
+  const result = await Promise.all(
+    participantsList.map(async (participant) => {
+      // Get the raffle number for this participant
+      const txn = await db.select().from(transactions)
+        .where(eq(transactions.participantId, participant.id))
+        .limit(1);
+      
+      if (txn.length > 0) {
+        const raffleNum = await db.select().from(raffleNumbers)
+          .where(eq(raffleNumbers.id, txn[0].raffleNumberId))
+          .limit(1);
+        
+        return {
+          ...participant,
+          raffleNumberId: txn[0].raffleNumberId,
+          raffleNumber: raffleNum.length > 0 ? raffleNum[0].number : null,
+          status: raffleNum.length > 0 ? raffleNum[0].status : null,
+        };
+      }
+      
+      return {
+        ...participant,
+        raffleNumberId: null,
+        raffleNumber: null,
+        status: null,
+      };
+    })
+  );
+  
+  return result;
+}

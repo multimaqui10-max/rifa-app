@@ -147,6 +147,34 @@ export const appRouter = router({
         return await db.getParticipants();
       }),
 
+    getParticipantsWithNumbers: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .query(async () => {
+        return await db.getParticipantsWithNumbers();
+      }),
+
+    markNumberAsSoldManual: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .input(
+        z.object({
+          raffleNumberId: z.number(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await db.updateRaffleNumberStatus(input.raffleNumberId, "sold");
+        return { success: true };
+      }),
+
     getTransactions: protectedProcedure
       .use(async ({ ctx, next }) => {
         if (ctx.user?.role !== "admin") {
