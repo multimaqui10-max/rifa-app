@@ -264,7 +264,7 @@ function PrizesTab() {
         toast.error("La descripción del premio es requerida");
         return;
       }
-      if (!data.value || data.value.trim() === "") {
+      if (data.value === undefined || data.value === null || data.value === "") {
         toast.error("El valor del premio es requerido");
         return;
       }
@@ -414,7 +414,7 @@ function PrizesTab() {
               ) : (
                 <>
                   <Plus className="w-4 h-4 mr-2" />
-                  Crear premio
+                  Guardar premio
                 </>
               )}
             </Button>
