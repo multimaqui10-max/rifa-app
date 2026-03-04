@@ -22,6 +22,7 @@ export default function Home() {
 
   const { data: raffleData, isLoading: isLoadingRaffle } = trpc.raffle.getConfig.useQuery();
   const { data: numbers, isLoading: isLoadingNumbers } = trpc.raffle.getNumbers.useQuery({});
+  const reserveNumberMutation = trpc.raffle.reserveNumber.useMutation();
 
   const config = raffleData?.config;
   const prizes = raffleData?.prizes || [];
@@ -165,9 +166,17 @@ export default function Home() {
             {numbers?.map((num) => (
               <button
                 key={num.id}
-                onClick={() => {
+                onClick={async () => {
                   if (num.status === "available") {
-                    navigate(`/checkout/${num.id}`);
+                    try {
+                      await reserveNumberMutation.mutateAsync({
+                        raffleNumberId: num.id,
+                        sessionId,
+                      });
+                      navigate(`/checkout/${num.id}`);
+                    } catch (error) {
+                      console.error("Error reserving number:", error);
+                    }
                   }
                 }}
                 disabled={num.status !== "available"}
