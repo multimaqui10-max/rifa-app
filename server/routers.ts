@@ -74,16 +74,17 @@ export const appRouter = router({
           position: z.number(),
           title: z.string(),
           description: z.string().optional(),
-          value: z.string().optional(),
+          value: z.union([z.string(), z.number()]).optional(),
           imageUrl: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
+        const value = typeof input.value === 'number' ? String(input.value) : input.value;
         return await db.createPrize({
           position: input.position,
           title: input.title,
           description: input.description,
-          value: input.value as any,
+          value: value as any,
           imageUrl: input.imageUrl,
         });
       }),
@@ -101,13 +102,14 @@ export const appRouter = router({
           position: z.number().optional(),
           title: z.string().optional(),
           description: z.string().optional(),
-          value: z.string().optional(),
+          value: z.union([z.string(), z.number()]).optional(),
           imageUrl: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
-        return await db.updatePrize(id, data as any);
+        const value = typeof data.value === 'number' ? String(data.value) : data.value;
+        return await db.updatePrize(id, { ...data, value } as any);
       }),
 
     deletePrize: protectedProcedure
