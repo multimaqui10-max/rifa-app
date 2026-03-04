@@ -36,6 +36,7 @@ export const raffleConfig = mysqlTable("raffleConfig", {
   drawDate: timestamp("drawDate").notNull(),
   drawTime: varchar("drawTime", { length: 5 }), // HH:mm format
   totalNumbers: int("totalNumbers").default(1000).notNull(),
+  mercadoPagoLink: text("mercadoPagoLink"), // Link de pago de Mercado Pago
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

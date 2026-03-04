@@ -124,6 +124,7 @@ function ConfigTab() {
         numberPrice: data.numberPrice,
         drawDate: data.drawDate ? new Date(data.drawDate) : undefined,
         drawTime: data.drawTime,
+        mercadoPagoLink: data.mercadoPagoLink,
       });
       toast.success("Configuración actualizada");
     } catch (error) {
@@ -160,6 +161,17 @@ function ConfigTab() {
           <div className="space-y-2">
             <Label htmlFor="drawDate">Fecha del sorteo</Label>
             <Input id="drawDate" type="date" {...register("drawDate")} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mercadoPagoLink">Link de pago Mercado Pago</Label>
+            <Input 
+              id="mercadoPagoLink" 
+              type="url"
+              placeholder="https://mpago.la/..." 
+              {...register("mercadoPagoLink")} 
+            />
+            <p className="text-xs text-muted-foreground">Pega aquí el link de tu cobro de Mercado Pago</p>
           </div>
 
           <Button type="submit" disabled={updateConfigMutation.isPending}>

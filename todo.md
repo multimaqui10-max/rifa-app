@@ -65,3 +65,10 @@
 - [x] Agregar input de archivo en panel de administración
 - [x] Mostrar imágenes en premios de página pública
 - [x] Validar tipos de archivo (JPG, PNG)
+
+## Integración Mercado Pago
+- [x] Agregar campo de link de Mercado Pago en configuración
+- [x] Mejorar página de checkout con formulario de participante
+- [x] Agregar botón de pago que redirija a Mercado Pago
+- [ ] Integrar webhook para confirmar pagos - PENDIENTE
+- [ ] Marcar números como vendidos después del pago - PENDIENTE

@@ -63,17 +63,31 @@ export default function Checkout() {
       });
 
       if (participantResult.success && participantResult.participant) {
-        // Complete transaction
-        await completeTransactionMutation.mutateAsync({
-          participantId: (participantResult.participant as any).id,
-          raffleNumberId,
-          sessionId,
-          amount: price,
-          currency: "USD",
-        });
-
-        setStep("confirmation");
-        toast.success("¡Compra completada exitosamente!");
+        // Si hay link de Mercado Pago, redirigir
+        if (config?.mercadoPagoLink) {
+          // Guardar datos en localStorage para después del pago
+          localStorage.setItem('pendingTransaction', JSON.stringify({
+            participantId: (participantResult.participant as any).id,
+            raffleNumberId,
+            sessionId,
+            amount: price,
+            currency: "USD",
+          }));
+          // Redirigir a Mercado Pago
+          window.open(config.mercadoPagoLink, '_blank');
+          toast.success("Se abrió Mercado Pago. Completa el pago para confirmar tu compra.");
+        } else {
+          // Sin Mercado Pago, marcar como completado
+          await completeTransactionMutation.mutateAsync({
+            participantId: (participantResult.participant as any).id,
+            raffleNumberId,
+            sessionId,
+            amount: price,
+            currency: "USD",
+          });
+          setStep("confirmation");
+          toast.success("¡Compra completada exitosamente!");
+        }
       }
     } catch (error: any) {
       toast.error(error.message || "Error al procesar la compra");
@@ -194,6 +208,8 @@ export default function Checkout() {
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Procesando...
                     </>
+                  ) : config?.mercadoPagoLink ? (
+                    "Ir a pagar con Mercado Pago"
                   ) : (
                     "Completar compra"
                   )}

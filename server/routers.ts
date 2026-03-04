@@ -45,6 +45,7 @@ export const appRouter = router({
           numberPrice: z.string().optional(),
           drawDate: z.date().optional(),
           drawTime: z.string().optional(),
+          mercadoPagoLink: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
