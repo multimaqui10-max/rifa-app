@@ -105,7 +105,12 @@ export default function AdminDashboard() {
 
 function ConfigTab() {
   const { data: raffleData, isLoading } = trpc.raffle.getConfig.useQuery();
-  const updateConfigMutation = trpc.raffle.updateConfig.useMutation();
+  const utils = trpc.useUtils();
+  const updateConfigMutation = trpc.raffle.updateConfig.useMutation({
+    onSuccess: () => {
+      utils.raffle.getConfig.invalidate();
+    },
+  });
   const { register, handleSubmit, reset } = useForm({
     defaultValues: raffleData?.config || {},
   });
@@ -194,9 +199,25 @@ function PrizesTab() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { data: prizes, isLoading, refetch } = trpc.raffle.getPrizes.useQuery();
-  const createPrizeMutation = trpc.raffle.createPrize.useMutation();
-  const updatePrizeMutation = trpc.raffle.updatePrize.useMutation();
-  const deletePrizeMutation = trpc.raffle.deletePrize.useMutation();
+  const utils = trpc.useUtils();
+  const createPrizeMutation = trpc.raffle.createPrize.useMutation({
+    onSuccess: () => {
+      utils.raffle.getPrizes.invalidate();
+      utils.raffle.getConfig.invalidate();
+    },
+  });
+  const updatePrizeMutation = trpc.raffle.updatePrize.useMutation({
+    onSuccess: () => {
+      utils.raffle.getPrizes.invalidate();
+      utils.raffle.getConfig.invalidate();
+    },
+  });
+  const deletePrizeMutation = trpc.raffle.deletePrize.useMutation({
+    onSuccess: () => {
+      utils.raffle.getPrizes.invalidate();
+      utils.raffle.getConfig.invalidate();
+    },
+  });
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       position: "",
@@ -220,6 +241,13 @@ function PrizesTab() {
 
   const onSubmit = async (data: any) => {
     try {
+      // Validar que position sea un número válido
+      const position = parseInt(data.position);
+      if (isNaN(position) || position < 1) {
+        toast.error("La posición debe ser un número válido mayor a 0");
+        return;
+      }
+
       let imageUrl: string | undefined;
       
       // Si hay una imagen seleccionada, subirla primero
@@ -242,7 +270,7 @@ function PrizesTab() {
       }
       
       await createPrizeMutation.mutateAsync({
-        position: parseInt(data.position),
+        position: position,
         title: data.title,
         description: data.description,
         value: data.value,
