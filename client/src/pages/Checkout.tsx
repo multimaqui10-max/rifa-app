@@ -111,7 +111,7 @@ export default function Checkout() {
               <p className="text-4xl font-bold text-accent">{currentNumber.number}</p>
             </div>
             <div className="space-y-2 text-sm">
-              <p><strong>Monto pagado:</strong> ${price}</p>
+              <p><strong>Monto pagado:</strong> ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(price)).replace('CLP', '').trim()}</p>
               <p><strong>Fecha del sorteo:</strong> {config?.drawDate ? new Date(config.drawDate).toLocaleDateString() : "Por definir"}</p>
             </div>
             <Button onClick={() => navigate("/")} className="w-full">
@@ -233,11 +233,11 @@ export default function Checkout() {
                 <div className="space-y-2 border-t border-border pt-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Precio unitario</span>
-                    <span className="font-semibold">${price}</span>
+                    <span className="font-semibold">${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(price)).replace('CLP', '').trim()}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-accent">${price}</span>
+                    <span className="text-accent">${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(price)).replace('CLP', '').trim()}</span>
                   </div>
                 </div>
 
