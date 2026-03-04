@@ -248,6 +248,19 @@ function PrizesTab() {
         return;
       }
 
+      if (!data.title || data.title.trim() === "") {
+        toast.error("El título del premio es requerido");
+        return;
+      }
+      if (!data.description || data.description.trim() === "") {
+        toast.error("La descripción del premio es requerida");
+        return;
+      }
+      if (!data.value || data.value.trim() === "") {
+        toast.error("El valor del premio es requerido");
+        return;
+      }
+
       let imageUrl: string | undefined;
       
       // Si hay una imagen seleccionada, subirla primero
