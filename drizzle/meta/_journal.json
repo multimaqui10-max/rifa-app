@@ -15,6 +15,13 @@
       "when": 1772656306296,
       "tag": "0001_fine_doctor_faustus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772659129640,
+      "tag": "0002_nifty_captain_marvel",
+      "breakpoints": true
     }
   ]
 }

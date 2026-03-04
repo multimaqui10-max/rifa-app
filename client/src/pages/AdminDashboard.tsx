@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowLeft, Plus, Trash2, Edit2 } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, Trash2, Edit2, Upload, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -178,8 +179,11 @@ function ConfigTab() {
 }
 
 function PrizesTab() {
-  const { data: prizes, isLoading } = trpc.raffle.getPrizes.useQuery();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { data: prizes, isLoading, refetch } = trpc.raffle.getPrizes.useQuery();
   const createPrizeMutation = trpc.raffle.createPrize.useMutation();
+  const updatePrizeMutation = trpc.raffle.updatePrize.useMutation();
   const deletePrizeMutation = trpc.raffle.deletePrize.useMutation();
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -190,18 +194,55 @@ function PrizesTab() {
     },
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
+      let imageUrl: string | undefined;
+      
+      // Si hay una imagen seleccionada, subirla primero
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        
+        // Usar fetch para subir la imagen
+        const uploadResponse = await fetch("/api/upload-prize-image", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error("Error al subir la imagen");
+        }
+        
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.imageUrl;
+      }
+      
       await createPrizeMutation.mutateAsync({
         position: parseInt(data.position),
         title: data.title,
         description: data.description,
         value: data.value,
+        imageUrl,
       });
       reset();
+      setImagePreview(null);
+      setSelectedFile(null);
+      refetch();
       toast.success("Premio creado");
-    } catch (error) {
-      toast.error("Error al crear premio");
+    } catch (error: any) {
+      toast.error(error.message || "Error al crear premio");
     }
   };
 
@@ -246,9 +287,75 @@ function PrizesTab() {
               <Input id="value" {...register("value")} />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="image">Imagen del premio (JPG, PNG)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleImageChange}
+                  className="flex-1"
+                />
+              </div>
+              {imagePreview && (
+                <div className="mt-2 relative w-32 h-32 rounded-lg overflow-hidden border border-border">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <h4 className="font-semibold">Premios existentes</h4>
+              {prizes && prizes.length > 0 ? (
+                <div className="space-y-2">
+                  {prizes.map((prize) => (
+                    <div key={prize.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3 flex-1">
+                        {prize.imageUrl && (
+                          <img
+                            src={prize.imageUrl}
+                            alt={prize.title}
+                            className="w-12 h-12 rounded object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{prize.position}º - {prize.title}</p>
+                          <p className="text-sm text-muted-foreground">${prize.value}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(prize.id)}
+                        disabled={deletePrizeMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No hay premios creados</p>
+              )}
+            </div>
+
             <Button type="submit" disabled={createPrizeMutation.isPending}>
-              <Plus className="w-4 h-4 mr-2" />
-              Crear premio
+              {createPrizeMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear premio
+                </>
+              )}
             </Button>
           </form>
         </CardContent>

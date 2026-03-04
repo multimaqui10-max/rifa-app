@@ -1,0 +1,1 @@
+ALTER TABLE `prizes` ADD `imageUrl` text;

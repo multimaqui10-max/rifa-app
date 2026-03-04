@@ -52,6 +52,7 @@ export const prizes = mysqlTable("prizes", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   value: decimal("value", { precision: 10, scale: 2 }),
+  imageUrl: text("imageUrl"), // URL de la imagen del premio
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

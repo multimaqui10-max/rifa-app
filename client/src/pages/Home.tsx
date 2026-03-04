@@ -118,7 +118,16 @@ export default function Home() {
             <div className="space-y-3">
               {prizes.length > 0 ? (
                 prizes.map((prize, idx) => (
-                  <Card key={prize.id} className="border-l-4 border-l-accent">
+                  <Card key={prize.id} className="border-l-4 border-l-accent overflow-hidden">
+                    {prize.imageUrl && (
+                      <div className="w-full h-48 overflow-hidden">
+                        <img
+                          src={prize.imageUrl}
+                          alt={prize.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div>

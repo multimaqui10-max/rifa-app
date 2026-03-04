@@ -69,6 +69,7 @@ export const appRouter = router({
           title: z.string(),
           description: z.string().optional(),
           value: z.string().optional(),
+          imageUrl: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -77,6 +78,7 @@ export const appRouter = router({
           title: input.title,
           description: input.description,
           value: input.value as any,
+          imageUrl: input.imageUrl,
         });
       }),
 
@@ -94,6 +96,7 @@ export const appRouter = router({
           title: z.string().optional(),
           description: z.string().optional(),
           value: z.string().optional(),
+          imageUrl: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {

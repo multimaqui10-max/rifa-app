@@ -58,3 +58,10 @@
 - [ ] Pruebas responsivas en diferentes dispositivos
 - [x] Validación de datos en frontend y backend
 - [ ] Optimización de rendimiento - PENDIENTE
+
+## Funcionalidad de Imágenes de Premios
+- [x] Agregar campo de URL de imagen en tabla de premios
+- [x] Crear endpoint para carga de imágenes a S3
+- [x] Agregar input de archivo en panel de administración
+- [x] Mostrar imágenes en premios de página pública
+- [x] Validar tipos de archivo (JPG, PNG)
