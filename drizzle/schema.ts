@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, json } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -25,4 +25,103 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Configuración de la rifa (una sola fila)
+ */
+export const raffleConfig = mysqlTable("raffleConfig", {
+  id: int("id").autoincrement().primaryKey(),
+  raffleTitle: varchar("raffleTitle", { length: 255 }).default("Mi Rifa").notNull(),
+  raffleDescription: text("raffleDescription"),
+  numberPrice: decimal("numberPrice", { precision: 10, scale: 2 }).notNull(),
+  drawDate: timestamp("drawDate").notNull(),
+  drawTime: varchar("drawTime", { length: 5 }), // HH:mm format
+  totalNumbers: int("totalNumbers").default(1000).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RaffleConfig = typeof raffleConfig.$inferSelect;
+export type InsertRaffleConfig = typeof raffleConfig.$inferInsert;
+
+/**
+ * Premios de la rifa
+ */
+export const prizes = mysqlTable("prizes", {
+  id: int("id").autoincrement().primaryKey(),
+  position: int("position").notNull(), // 1er premio, 2do premio, etc.
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  value: decimal("value", { precision: 10, scale: 2 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Prize = typeof prizes.$inferSelect;
+export type InsertPrize = typeof prizes.$inferInsert;
+
+/**
+ * Números de la rifa
+ */
+export const raffleNumbers = mysqlTable("raffleNumbers", {
+  id: int("id").autoincrement().primaryKey(),
+  number: int("number").notNull().unique(), // 1 a 1000
+  status: mysqlEnum("status", ["available", "reserved", "sold"]).default("available").notNull(),
+  reservedAt: timestamp("reservedAt"),
+  reservationExpiresAt: timestamp("reservationExpiresAt"),
+  soldAt: timestamp("soldAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RaffleNumber = typeof raffleNumbers.$inferSelect;
+export type InsertRaffleNumber = typeof raffleNumbers.$inferInsert;
+
+/**
+ * Participantes de la rifa
+ */
+export const participants = mysqlTable("participants", {
+  id: int("id").autoincrement().primaryKey(),
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  lastName: varchar("lastName", { length: 100 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Participant = typeof participants.$inferSelect;
+export type InsertParticipant = typeof participants.$inferInsert;
+
+/**
+ * Transacciones de compra
+ */
+export const transactions = mysqlTable("transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  participantId: int("participantId").notNull(),
+  raffleNumberId: int("raffleNumberId").notNull(),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).unique(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  status: mysqlEnum("status", ["pending", "completed", "failed", "refunded"]).default("pending").notNull(),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = typeof transactions.$inferInsert;
+
+/**
+ * Reservas temporales de números
+ */
+export const reservations = mysqlTable("reservations", {
+  id: int("id").autoincrement().primaryKey(),
+  raffleNumberId: int("raffleNumberId").notNull(),
+  sessionId: varchar("sessionId", { length: 255 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Reservation = typeof reservations.$inferSelect;
+export type InsertReservation = typeof reservations.$inferInsert;

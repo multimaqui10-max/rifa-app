@@ -175,3 +175,38 @@
     }
   }
 }
+
+/* Raffle-specific components */
+@layer components {
+  .number-grid {
+    @apply grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 sm:gap-3;
+  }
+
+  .number-item {
+    @apply aspect-square flex items-center justify-center rounded-lg font-bold text-sm sm:text-base transition-all duration-200 cursor-pointer border-2;
+  }
+
+  .number-available {
+    @apply bg-white text-foreground border-border hover:border-ring hover:shadow-lg hover:scale-105;
+  }
+
+  .number-reserved {
+    @apply bg-yellow-100 text-yellow-900 border-yellow-300 cursor-not-allowed opacity-75;
+  }
+
+  .number-sold {
+    @apply bg-accent text-accent-foreground border-accent cursor-not-allowed opacity-60;
+  }
+
+  .number-selected {
+    @apply bg-ring text-accent-foreground border-ring shadow-lg ring-2 ring-ring/50 scale-105;
+  }
+
+  .card-elevated {
+    @apply bg-card text-card-foreground rounded-xl shadow-lg border border-border;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-accent via-purple-500 to-pink-500 bg-clip-text text-transparent;
+  }
+}
