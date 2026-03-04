@@ -42,14 +42,19 @@ export const appRouter = router({
         z.object({
           raffleTitle: z.string().optional(),
           raffleDescription: z.string().optional(),
-          numberPrice: z.string().optional(),
+          numberPrice: z.union([z.string(), z.number()]).optional(),
           drawDate: z.date().optional(),
           drawTime: z.string().optional(),
           mercadoPagoLink: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
-        return await db.updateRaffleConfig(input);
+        // Convertir numberPrice a string si es número
+        const processedInput = { ...input };
+        if (typeof processedInput.numberPrice === 'number') {
+          processedInput.numberPrice = processedInput.numberPrice.toString();
+        }
+        return await db.updateRaffleConfig(processedInput as any);
       }),
 
     // ===== PRIZES =====

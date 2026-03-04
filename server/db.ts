@@ -99,16 +99,22 @@ export async function getRaffleConfig() {
   return result.length > 0 ? result[0] : null;
 }
 
-export async function updateRaffleConfig(data: Partial<typeof raffleConfig.$inferInsert>) {
+export async function updateRaffleConfig(data: Partial<typeof raffleConfig.$inferInsert> & { numberPrice?: string | number }) {
   const db = await getDb();
   if (!db) return null;
   
-  const config = await getRaffleConfig();
-  if (!config) {
-    return await db.insert(raffleConfig).values(data as any);
+  // Convertir numberPrice a string si es número
+  const processedData: any = { ...data };
+  if (typeof processedData.numberPrice === 'number') {
+    processedData.numberPrice = String(processedData.numberPrice);
   }
   
-  return await db.update(raffleConfig).set(data).where(eq(raffleConfig.id, config.id));
+  const config = await getRaffleConfig();
+  if (!config) {
+    return await db.insert(raffleConfig).values(processedData as any);
+  }
+  
+  return await db.update(raffleConfig).set(processedData).where(eq(raffleConfig.id, config.id));
 }
 
 // ===== PRIZES =====
