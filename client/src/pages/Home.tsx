@@ -65,7 +65,7 @@ export default function Home() {
           <div className="space-y-6">
             <div>
               <h2 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
-                Participa en nuestra <span className="gradient-text">rifa</span>
+                Participa en nuestra <span className="gradient-text">RIFA</span>
               </h2>
               <p className="text-lg text-muted-foreground">
                 {config?.raffleDescription || "Selecciona tus números de la suerte y gana increíbles premios."}
