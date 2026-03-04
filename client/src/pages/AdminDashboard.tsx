@@ -168,7 +168,7 @@ function ConfigTab() {
 
           <div className="space-y-2">
             <Label htmlFor="numberPrice">Precio por número</Label>
-            <Input id="numberPrice" {...register("numberPrice")} />
+            <Input id="numberPrice" type="number" inputMode="numeric" {...register("numberPrice", { valueAsNumber: true })} placeholder="5000" />
           </div>
 
           <div className="space-y-2">
@@ -345,7 +345,7 @@ function PrizesTab() {
 
             <div className="space-y-2">
               <Label htmlFor="value">Valor</Label>
-              <Input id="value" {...register("value")} />
+              <Input id="value" type="number" inputMode="numeric" {...register("value", { valueAsNumber: true })} placeholder="5000" />
             </div>
 
             <div className="space-y-2">
