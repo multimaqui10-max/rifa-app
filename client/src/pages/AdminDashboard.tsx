@@ -104,20 +104,28 @@ export default function AdminDashboard() {
 }
 
 function ConfigTab() {
-  const { data: raffleData, isLoading } = trpc.raffle.getConfig.useQuery();
+  const { data: raffleData, isLoading, refetch } = trpc.raffle.getConfig.useQuery();
   const utils = trpc.useUtils();
   const updateConfigMutation = trpc.raffle.updateConfig.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refetch();
       utils.raffle.getConfig.invalidate();
     },
   });
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: raffleData?.config || {},
   });
+  
+  const formValues = watch();
 
   useEffect(() => {
     if (raffleData?.config) {
-      reset(raffleData.config as any);
+      const configData = raffleData.config as any;
+      if (configData.drawDate) {
+        const date = new Date(configData.drawDate);
+        configData.drawDate = date.toISOString().split('T')[0];
+      }
+      reset(configData);
     }
   }, [raffleData, reset]);
 
