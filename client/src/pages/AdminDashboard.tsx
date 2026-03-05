@@ -462,6 +462,15 @@ function ParticipantsTab() {
       toast.error("Error al marcar como vendido");
     },
   });
+  const cleanupMutation = trpc.raffle.cleanupExpiredReservations.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Reservas expiradas limpiadas exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al limpiar reservas expiradas");
+    },
+  });
   const utils = trpc.useUtils();
 
   if (isLoading) {
@@ -471,8 +480,30 @@ function ParticipantsTab() {
   return (
     <Card className="card-elevated">
       <CardHeader>
-        <CardTitle>Participantes registrados</CardTitle>
-        <CardDescription>Total: {participants?.length || 0}</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Participantes registrados</CardTitle>
+            <CardDescription>Total: {participants?.length || 0}</CardDescription>
+          </div>
+          <Button
+            onClick={() => cleanupMutation.mutateAsync().then(() => {
+              utils.raffle.getNumbers.invalidate();
+              utils.raffle.getConfig.invalidate();
+            })}
+            disabled={cleanupMutation.isPending}
+            variant="outline"
+            size="sm"
+          >
+            {cleanupMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Limpiando...
+              </>
+            ) : (
+              "Limpiar reservas expiradas"
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

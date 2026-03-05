@@ -73,5 +73,9 @@
 - [ ] Integrar webhook para confirmar pagos - PENDIENTE
 - [ ] Marcar números como vendidos después del pago - PENDIENTE
 
+## Funcionalidad de Expiración de Reservas
+- [ ] Crear función para liberar reservas expiradas después de 24 horas
+- [ ] Agregar job programada para ejecutar limpieza de reservas
+- [ ] Actualizar lógica de números disponibles para excluir reservas expiradas
+
 ## Bugs Reportados
-- [ ] Botón "Marcar vendido" no aparece en sección de participantes - PENDIENTE CORREGIR

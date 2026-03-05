@@ -410,6 +410,18 @@ export const appRouter = router({
         await db.updateRaffleNumberStatus(input.raffleNumberId, "available");
         return { success: true };
       }),
+
+    cleanupExpiredReservations: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        await db.cleanupExpiredReservations();
+        return { success: true };
+      }),
   }),
 });
 

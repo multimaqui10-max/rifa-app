@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, asc, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, raffleConfig, prizes, raffleNumbers, participants, transactions, reservations } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -379,4 +379,46 @@ export async function updateReservationParticipant(reservationId: number, partic
     .where(eq(reservations.id, reservationId));
 
   return await db.select().from(reservations).where(eq(reservations.id, reservationId)).limit(1);
+}
+
+
+// Función para limpiar reservas expiradas (más de 24 horas)
+export async function cleanupExpiredReservations() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot cleanup reservations: database not available");
+    return;
+  }
+
+  try {
+    // Calcular timestamp de hace 24 horas
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // Obtener reservas expiradas
+    const expiredReservations = await db
+      .select()
+      .from(reservations)
+      .where(lt(reservations.createdAt, twentyFourHoursAgo));
+
+    if (expiredReservations.length === 0) {
+      console.log("[Database] No expired reservations to clean up");
+      return;
+    }
+
+    // Liberar los números de las reservas expiradas
+    for (const reservation of expiredReservations) {
+      // Actualizar el estado del número a 'available'
+      await db.update(raffleNumbers)
+        .set({ status: 'available' })
+        .where(eq(raffleNumbers.id, reservation.raffleNumberId));
+
+      // Eliminar la reserva
+      await db.delete(reservations)
+        .where(eq(reservations.id, reservation.id));
+    }
+
+    console.log(`[Database] Cleaned up ${expiredReservations.length} expired reservations`);
+  } catch (error) {
+    console.error("[Database] Failed to cleanup expired reservations:", error);
+  }
 }

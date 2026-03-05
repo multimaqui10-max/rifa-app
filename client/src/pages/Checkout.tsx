@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
