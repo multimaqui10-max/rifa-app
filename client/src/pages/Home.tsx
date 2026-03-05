@@ -166,17 +166,9 @@ export default function Home() {
             {numbers?.map((num) => (
               <button
                 key={num.id}
-                onClick={async () => {
+                onClick={() => {
                   if (num.status === "available") {
-                    try {
-                      await reserveNumberMutation.mutateAsync({
-                        raffleNumberId: num.id,
-                        sessionId,
-                      });
-                      navigate(`/checkout/${num.id}`);
-                    } catch (error) {
-                      console.error("Error reserving number:", error);
-                    }
+                    navigate(`/checkout/${num.id}`);
                   }
                 }}
                 disabled={num.status !== "available"}

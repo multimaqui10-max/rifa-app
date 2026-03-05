@@ -27,6 +27,7 @@ export default function Checkout() {
   const raffleNumberId = params?.id ? parseInt(params.id) : null;
   const [sessionId] = useState(() => localStorage.getItem("sessionId") || "");
   const [step, setStep] = useState<"info" | "confirmation">("info");
+  const [reservationConfirmed, setReservationConfirmed] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ParticipantFormData>({
     resolver: zodResolver(participantSchema),
@@ -34,8 +35,24 @@ export default function Checkout() {
 
   const { data: raffleData } = trpc.raffle.getConfig.useQuery();
   const { data: raffleNumber } = trpc.raffle.getNumbers.useQuery({});
+  const reserveNumberMutation = trpc.raffle.reserveNumber.useMutation();
+  const cancelReservationMutation = trpc.raffle.cancelReservation.useMutation();
   const createParticipantMutation = trpc.raffle.createParticipant.useMutation();
   const completeTransactionMutation = trpc.raffle.completeTransaction.useMutation();
+
+  // Cleanup: cancel reservation if user leaves without completing purchase
+  useEffect(() => {
+    return () => {
+      if (raffleNumberId && sessionId && !reservationConfirmed) {
+        cancelReservationMutation.mutateAsync({
+          raffleNumberId,
+          sessionId,
+        }).catch(() => {
+          // Silently fail - reservation will expire anyway
+        });
+      }
+    };
+  }, [raffleNumberId, sessionId, reservationConfirmed, cancelReservationMutation]);
 
   const currentNumber = raffleNumber?.find((n) => n.id === raffleNumberId);
   const config = raffleData?.config;
@@ -56,6 +73,17 @@ export default function Checkout() {
 
   const onSubmit = async (data: ParticipantFormData) => {
     try {
+      // First, reserve the number
+      try {
+        await reserveNumberMutation.mutateAsync({
+          raffleNumberId,
+          sessionId,
+        });
+      } catch (reserveError: any) {
+        toast.error(reserveError.message || "Este número no está disponible");
+        return;
+      }
+
       // Create participant
       const participantResult = await createParticipantMutation.mutateAsync({
         ...data,
@@ -74,6 +102,8 @@ export default function Checkout() {
             amount: price,
             currency: "USD",
           }));
+          // Mark reservation as confirmed
+          setReservationConfirmed(true);
           // Redirigir a Mercado Pago
           window.open(config.mercadoPagoLink, '_blank');
           toast.success("Se abrió Mercado Pago. Completa el pago para confirmar tu compra.");
@@ -86,6 +116,8 @@ export default function Checkout() {
             amount: price,
             currency: "USD",
           });
+          // Mark reservation as confirmed
+          setReservationConfirmed(true);
           setStep("confirmation");
           toast.success("¡Compra completada exitosamente!");
         }
