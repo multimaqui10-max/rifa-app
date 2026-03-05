@@ -25,7 +25,14 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const [match, params] = useRoute("/checkout/:id");
   const raffleNumberId = params?.id ? parseInt(params.id) : null;
-  const [sessionId] = useState(() => localStorage.getItem("sessionId") || "");
+  const [sessionId] = useState(() => {
+    let id = localStorage.getItem("sessionId");
+    if (!id) {
+      id = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem("sessionId", id);
+    }
+    return id;
+  });
   const [step, setStep] = useState<"info" | "confirmation">("info");
   const [reservationConfirmed, setReservationConfirmed] = useState(false);
 
@@ -74,12 +81,15 @@ export default function Checkout() {
   const onSubmit = async (data: ParticipantFormData) => {
     try {
       // First, reserve the number
+      console.log("Attempting to reserve number:", raffleNumberId, "with sessionId:", sessionId);
       try {
-        await reserveNumberMutation.mutateAsync({
+        const reserveResult = await reserveNumberMutation.mutateAsync({
           raffleNumberId,
           sessionId,
         });
+        console.log("Reservation successful:", reserveResult);
       } catch (reserveError: any) {
+        console.error("Reservation failed:", reserveError);
         toast.error(reserveError.message || "Este número no está disponible");
         return;
       }
