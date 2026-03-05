@@ -254,7 +254,8 @@ export const appRouter = router({
         );
 
         if (!reservation) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Reserva no encontrada" });
+          // Silently succeed - reservation may have already expired or been deleted
+          return { success: true };
         }
 
         // Delete reservation
