@@ -317,7 +317,7 @@ export async function getParticipantsWithNumbers() {
         .where(eq(transactions.participantId, participant.id))
         .limit(1);
       
-      if (txn.length > 0) {
+      if (txn.length > 0 && txn[0].raffleNumberId) {
         const raffleNum = await db.select().from(raffleNumbers)
           .where(eq(raffleNumbers.id, txn[0].raffleNumberId))
           .limit(1);
@@ -325,6 +325,24 @@ export async function getParticipantsWithNumbers() {
         return {
           ...participant,
           raffleNumberId: txn[0].raffleNumberId,
+          raffleNumber: raffleNum.length > 0 ? raffleNum[0].number : null,
+          status: raffleNum.length > 0 ? raffleNum[0].status : null,
+        };
+      }
+      
+      // If no transaction, try to get from reservations (pending purchases)
+      const reservation = await db.select().from(reservations)
+        .where(eq(reservations.participantId, participant.id))
+        .limit(1);
+      
+      if (reservation.length > 0 && reservation[0].raffleNumberId) {
+        const raffleNum = await db.select().from(raffleNumbers)
+          .where(eq(raffleNumbers.id, reservation[0].raffleNumberId))
+          .limit(1);
+        
+        return {
+          ...participant,
+          raffleNumberId: reservation[0].raffleNumberId,
           raffleNumber: raffleNum.length > 0 ? raffleNum[0].number : null,
           status: raffleNum.length > 0 ? raffleNum[0].status : null,
         };

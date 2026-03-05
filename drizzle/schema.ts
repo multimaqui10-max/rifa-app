@@ -120,6 +120,7 @@ export type InsertTransaction = typeof transactions.$inferInsert;
 export const reservations = mysqlTable("reservations", {
   id: int("id").autoincrement().primaryKey(),
   raffleNumberId: int("raffleNumberId").notNull(),
+  participantId: int("participantId"),
   sessionId: varchar("sessionId", { length: 255 }).notNull(),
   expiresAt: timestamp("expiresAt").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
