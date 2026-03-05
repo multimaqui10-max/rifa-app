@@ -104,7 +104,7 @@ export default function Home() {
                 <div className="flex items-center gap-3 text-lg">
                   <DollarSign className="w-5 h-5 text-accent" />
                   <span>
-                    <strong>Valor por número:</strong> ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(config.numberPrice)).replace('CLP', '').trim()}
+                    <strong>Valor por número:</strong> {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(config.numberPrice)).replace('CLP', '').trim()}
                   </span>
                 </div>
               )}
@@ -136,7 +136,7 @@ export default function Home() {
                           <CardTitle className="text-lg">{prize.position}º Premio</CardTitle>
                           <CardDescription>{prize.title}</CardDescription>
                         </div>
-                        {prize.value && <span className="text-xl font-bold text-accent">${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(prize.value)).replace('CLP', '').trim()}</span>}
+                        {prize.value && <span className="text-xl font-bold text-accent">{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(Number(prize.value)).replace('CLP', '').trim()}</span>}
                       </div>
                     </CardHeader>
                     {prize.description && (
