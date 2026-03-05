@@ -135,6 +135,7 @@ function ConfigTab() {
         raffleTitle: data.raffleTitle,
         raffleDescription: data.raffleDescription,
         numberPrice: data.numberPrice,
+        totalNumbers: data.totalNumbers ? parseInt(data.totalNumbers) : undefined,
         drawDate: data.drawDate ? new Date(data.drawDate) : undefined,
         drawTime: data.drawTime,
         mercadoPagoLink: data.mercadoPagoLink,
@@ -169,6 +170,12 @@ function ConfigTab() {
           <div className="space-y-2">
             <Label htmlFor="numberPrice">Precio por número</Label>
             <Input id="numberPrice" type="number" inputMode="numeric" {...register("numberPrice", { valueAsNumber: true })} placeholder="5000" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="totalNumbers">Total de números</Label>
+            <Input id="totalNumbers" type="number" inputMode="numeric" {...register("totalNumbers", { valueAsNumber: true })} placeholder="1000" />
+            <p className="text-xs text-muted-foreground">Cantidad total de números en la rifa</p>
           </div>
 
           <div className="space-y-2">

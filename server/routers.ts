@@ -46,6 +46,7 @@ export const appRouter = router({
           drawDate: z.date().optional(),
           drawTime: z.string().optional(),
           mercadoPagoLink: z.string().optional(),
+          totalNumbers: z.number().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -54,7 +55,15 @@ export const appRouter = router({
         if (typeof processedInput.numberPrice === 'number') {
           processedInput.numberPrice = processedInput.numberPrice.toString();
         }
-        return await db.updateRaffleConfig(processedInput as any);
+        
+        // Handle totalNumbers separately if provided
+        const { totalNumbers, ...configData } = processedInput as any;
+        
+        if (totalNumbers && totalNumbers > 0) {
+          await db.adjustTotalNumbers(totalNumbers);
+        }
+        
+        return await db.updateRaffleConfig(configData);
       }),
 
     // ===== PRIZES =====

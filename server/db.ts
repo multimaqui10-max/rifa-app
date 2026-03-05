@@ -474,3 +474,83 @@ export async function deleteAllParticipants(): Promise<void> {
     throw error;
   }
 }
+
+
+/**
+ * Adjust the total number of raffle numbers
+ * If newTotal > current, adds new numbers
+ * If newTotal < current, removes the highest numbered items
+ */
+export async function adjustTotalNumbers(newTotal: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    // Get current count
+    const currentNumbers = await db.select().from(raffleNumbers);
+    const currentTotal = currentNumbers.length;
+
+    if (newTotal === currentTotal) {
+      console.log("[Database] Total numbers unchanged");
+      return;
+    }
+
+    if (newTotal < 1) {
+      throw new Error("Total numbers must be at least 1");
+    }
+
+    if (newTotal > currentTotal) {
+      // Add new numbers
+      const numbersToAdd = newTotal - currentTotal;
+      const startNumber = currentTotal + 1;
+      
+      const newNumbers = Array.from({ length: numbersToAdd }, (_, i) => ({
+        number: startNumber + i,
+        status: "available" as const,
+      }));
+
+      await db.insert(raffleNumbers).values(newNumbers);
+      console.log(`[Database] Added ${numbersToAdd} new raffle numbers`);
+    } else {
+      // Remove numbers from the end
+      const numbersToRemove = currentTotal - newTotal;
+      const numbersToDelete = currentNumbers
+        .sort((a, b) => b.number - a.number)
+        .slice(0, numbersToRemove);
+
+      for (const num of numbersToDelete) {
+        // Check if number has transactions or reservations
+        const hasTransactions = await db.select()
+          .from(transactions)
+          .where(eq(transactions.raffleNumberId, num.id))
+          .limit(1);
+
+        const hasReservations = await db.select()
+          .from(reservations)
+          .where(eq(reservations.raffleNumberId, num.id))
+          .limit(1);
+
+        if (hasTransactions.length > 0 || hasReservations.length > 0) {
+          throw new Error(`Cannot remove number ${num.number}: it has associated transactions or reservations`);
+        }
+
+        await db.delete(raffleNumbers).where(eq(raffleNumbers.id, num.id));
+      }
+
+      console.log(`[Database] Removed ${numbersToRemove} raffle numbers`);
+    }
+
+    // Update config
+    const config = await getRaffleConfig();
+    if (config) {
+      await db.update(raffleConfig)
+        .set({ totalNumbers: newTotal })
+        .where(eq(raffleConfig.id, config.id));
+    }
+  } catch (error) {
+    console.error("[Database] Failed to adjust total numbers:", error);
+    throw error;
+  }
+}
