@@ -307,7 +307,6 @@ function PrizesTab() {
       reset();
       setImagePreview(null);
       setSelectedFile(null);
-      refetch();
       toast.success("Premio creado");
     } catch (error: any) {
       toast.error(error.message || "Error al crear premio");
