@@ -197,7 +197,16 @@ export async function createParticipant(data: typeof participants.$inferInsert) 
   const db = await getDb();
   if (!db) return null;
   
-  return await db.insert(participants).values(data);
+  const result = await db.insert(participants).values(data);
+  if (!result) return null;
+  
+  // Get the created participant by email (assuming email is unique or recent)
+  const participants_list = await db.select().from(participants)
+    .where(eq(participants.email, data.email))
+    .orderBy(desc(participants.createdAt))
+    .limit(1);
+  
+  return participants_list.length > 0 ? participants_list[0] : null;
 }
 
 export async function getParticipants() {
@@ -358,4 +367,16 @@ export async function getParticipantsWithNumbers() {
   );
   
   return result;
+}
+
+
+export async function updateReservationParticipant(reservationId: number, participantId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db.update(reservations)
+    .set({ participantId })
+    .where(eq(reservations.id, reservationId));
+
+  return await db.select().from(reservations).where(eq(reservations.id, reservationId)).limit(1);
 }

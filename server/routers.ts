@@ -298,6 +298,11 @@ export const appRouter = router({
           phone: input.phone,
         });
 
+        // Update reservation with participantId
+        if (participant && participant.id) {
+          await db.updateReservationParticipant(reservation.id, participant.id);
+        }
+
         return { success: true, participant };
       }),
 
