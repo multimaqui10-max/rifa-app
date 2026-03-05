@@ -72,3 +72,6 @@
 - [x] Agregar botón de pago que redirija a Mercado Pago
 - [ ] Integrar webhook para confirmar pagos - PENDIENTE
 - [ ] Marcar números como vendidos después del pago - PENDIENTE
+
+## Bugs Reportados
+- [ ] Botón "Marcar vendido" no aparece en sección de participantes - PENDIENTE CORREGIR
