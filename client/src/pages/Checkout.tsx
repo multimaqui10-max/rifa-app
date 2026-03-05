@@ -40,19 +40,8 @@ export default function Checkout() {
   const createParticipantMutation = trpc.raffle.createParticipant.useMutation();
   const completeTransactionMutation = trpc.raffle.completeTransaction.useMutation();
 
-  // Cleanup: cancel reservation if user leaves without completing purchase
-  useEffect(() => {
-    return () => {
-      if (raffleNumberId && sessionId && !reservationConfirmed) {
-        cancelReservationMutation.mutateAsync({
-          raffleNumberId,
-          sessionId,
-        }).catch(() => {
-          // Silently fail - reservation will expire anyway
-        });
-      }
-    };
-  }, [raffleNumberId, sessionId, reservationConfirmed]);
+  // TODO: Implement cleanup when user leaves checkout without completing purchase
+  // For now, reservations will expire automatically after 15 minutes
 
   const currentNumber = raffleNumber?.find((n) => n.id === raffleNumberId);
   const config = raffleData?.config;
