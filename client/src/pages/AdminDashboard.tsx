@@ -575,7 +575,7 @@ function ParticipantsTab() {
                   <td className="py-2 px-2">{p.firstName} {p.lastName}</td>
                   <td className="py-2 px-2">{p.email}</td>
                   <td className="py-2 px-2">{p.phone}</td>
-                  <td className="py-2 px-2 font-bold text-accent">{p.raffleNumber || '-'}</td>
+                  <td className="py-2 px-2 font-bold text-accent bg-accent/10 rounded">{p.raffleNumber || '-'}</td>
                   <td className="py-2 px-2">
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${
                       p.status === 'sold' ? 'bg-red-100 text-red-800' :
