@@ -301,17 +301,6 @@ export async function deleteExpiredReservations() {
   const db = await getDb();
   if (!db) return null;
   
-  // Get expired reservations first
-  const expiredReservations = await db.select().from(reservations).where(lte(reservations.expiresAt, new Date()));
-  
-  // Reset their numbers back to available
-  for (const reservation of expiredReservations) {
-    await db.update(raffleNumbers)
-      .set({ status: 'available' })
-      .where(and(eq(raffleNumbers.id, reservation.raffleNumberId), eq(raffleNumbers.status, 'reserved')));
-  }
-  
-  // Delete the expired reservations
   return await db.delete(reservations).where(lte(reservations.expiresAt, new Date()));
 }
 
