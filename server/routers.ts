@@ -422,6 +422,31 @@ export const appRouter = router({
         await db.cleanupExpiredReservations();
         return { success: true };
       }),
+
+    deleteParticipant: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .input(z.object({ participantId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteParticipant(input.participantId);
+        return { success: true };
+      }),
+
+    deleteAllParticipants: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        await db.deleteAllParticipants();
+        return { success: true };
+      }),
   }),
 });
 

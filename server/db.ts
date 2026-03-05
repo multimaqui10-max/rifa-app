@@ -422,3 +422,55 @@ export async function cleanupExpiredReservations() {
     console.error("[Database] Failed to cleanup expired reservations:", error);
   }
 }
+
+
+/**
+ * Delete a single participant and their associated data
+ */
+export async function deleteParticipant(participantId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    // Delete participant and cascade will handle related data
+    await db.delete(participants)
+      .where(eq(participants.id, participantId));
+
+    console.log(`[Database] Deleted participant ${participantId}`);
+  } catch (error) {
+    console.error("[Database] Failed to delete participant:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete all participants and reset the raffle
+ */
+export async function deleteAllParticipants(): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    // Delete all reservations first
+    await db.delete(reservations);
+
+    // Reset all raffle numbers to available
+    await db.update(raffleNumbers)
+      .set({ status: 'available' });
+
+    // Delete all transactions
+    await db.delete(transactions);
+
+    // Delete all participants
+    await db.delete(participants);
+
+    console.log("[Database] Deleted all participants and reset raffle");
+  } catch (error) {
+    console.error("[Database] Failed to delete all participants:", error);
+    throw error;
+  }
+}

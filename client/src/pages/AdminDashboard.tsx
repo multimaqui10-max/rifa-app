@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -471,6 +471,25 @@ function ParticipantsTab() {
       toast.error("Error al limpiar reservas expiradas");
     },
   });
+  const deleteParticipantMutation = trpc.raffle.deleteParticipant.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Participante eliminado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al eliminar participante");
+    },
+  });
+  const deleteAllMutation = trpc.raffle.deleteAllParticipants.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Todos los participantes han sido eliminados");
+    },
+    onError: () => {
+      toast.error("Error al eliminar participantes");
+    },
+  });
+  const [selectedParticipants, setSelectedParticipants] = React.useState<Set<number>>(new Set());
   const utils = trpc.useUtils();
 
   if (isLoading) {
@@ -485,24 +504,49 @@ function ParticipantsTab() {
             <CardTitle>Participantes registrados</CardTitle>
             <CardDescription>Total: {participants?.length || 0}</CardDescription>
           </div>
-          <Button
-            onClick={() => cleanupMutation.mutateAsync().then(() => {
-              utils.raffle.getNumbers.invalidate();
-              utils.raffle.getConfig.invalidate();
-            })}
-            disabled={cleanupMutation.isPending}
-            variant="outline"
-            size="sm"
-          >
-            {cleanupMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Limpiando...
-              </>
-            ) : (
-              "Limpiar reservas expiradas"
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => cleanupMutation.mutateAsync().then(() => {
+                utils.raffle.getNumbers.invalidate();
+                utils.raffle.getConfig.invalidate();
+              })}
+              disabled={cleanupMutation.isPending}
+              variant="outline"
+              size="sm"
+            >
+              {cleanupMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Limpiando...
+                </>
+              ) : (
+                "Limpiar reservas expiradas"
+              )}
+            </Button>
+            <Button
+              onClick={() => {
+                if (window.confirm("¿Estás seguro de que quieres eliminar TODOS los participantes? Esta acción no se puede deshacer.")) {
+                  deleteAllMutation.mutateAsync().then(() => {
+                    utils.raffle.getNumbers.invalidate();
+                    utils.raffle.getConfig.invalidate();
+                    setSelectedParticipants(new Set());
+                  });
+                }
+              }}
+              disabled={deleteAllMutation.isPending}
+              variant="destructive"
+              size="sm"
+            >
+              {deleteAllMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar todos"
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -536,7 +580,7 @@ function ParticipantsTab() {
                     </span>
                   </td>
                   <td className="py-2 px-2">{new Date(p.createdAt).toLocaleDateString()}</td>
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-2 flex gap-1">
                     {p.status !== 'sold' && p.raffleNumberId && (
                       <Button
                         size="sm"
@@ -552,6 +596,21 @@ function ParticipantsTab() {
                         {markAsSoldMutation.isPending ? 'Guardando...' : 'Marcar vendido'}
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        if (window.confirm(`¿Eliminar participante ${p.firstName} ${p.lastName}?`)) {
+                          deleteParticipantMutation.mutateAsync({ participantId: p.id }).then(() => {
+                            utils.raffle.getNumbers.invalidate();
+                            utils.raffle.getConfig.invalidate();
+                          });
+                        }
+                      }}
+                      disabled={deleteParticipantMutation.isPending}
+                    >
+                      {deleteParticipantMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                    </Button>
                   </td>
                 </tr>
               ))}
