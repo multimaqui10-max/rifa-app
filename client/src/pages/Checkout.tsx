@@ -52,7 +52,7 @@ export default function Checkout() {
         });
       }
     };
-  }, [raffleNumberId, sessionId, reservationConfirmed, cancelReservationMutation]);
+  }, [raffleNumberId, sessionId, reservationConfirmed]);
 
   const currentNumber = raffleNumber?.find((n) => n.id === raffleNumberId);
   const config = raffleData?.config;
