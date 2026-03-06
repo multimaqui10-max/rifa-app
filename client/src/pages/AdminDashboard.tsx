@@ -138,12 +138,12 @@ function ConfigTab() {
 
   const onSubmit = async (data: any) => {
     try {
-      // Convert date string to timestamp at midnight UTC
+      // Convert date string to local date at midnight
       let drawDate: Date | undefined;
       if (data.drawDate) {
-        // Parse the date string (format: YYYY-MM-DD) and create a Date at midnight UTC
+        // Parse the date string (format: YYYY-MM-DD) and create a Date at midnight in local timezone
         const [year, month, day] = data.drawDate.split('-').map(Number);
-        drawDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+        drawDate = new Date(year, month - 1, day, 0, 0, 0);
       }
       await updateConfigMutation.mutateAsync({
         raffleTitle: data.raffleTitle,
