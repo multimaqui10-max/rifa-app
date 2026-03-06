@@ -290,22 +290,20 @@ describe("Raffle System", () => {
         );
         expect(createdTx).toBeDefined();
 
-        // Mark the number as sold (this should also update the transaction)
+        // Simulate the markNumberAsSold endpoint logic:
+        // 1. Update number status to sold
         await db.updateRaffleNumberStatus(number.id, "sold");
-
-        // Find and update the transaction to completed
-        allTransactions = await db.getTransactions();
-        const txToUpdate = allTransactions.find(
-          (t) => t.raffleNumberId === number.id
-        );
-        if (txToUpdate) {
-          await db.updateTransactionStatus(txToUpdate.id, "completed", new Date());
+        
+        // 2. Update the specific transaction we created to completed
+        if (createdTx) {
+          await db.updateTransactionStatus(createdTx.id, "completed", new Date());
         }
 
         // Verify the transaction is now completed
         const updatedTx = await db.getTransactions();
         const finalTx = updatedTx.find((t) => t.id === createdTx?.id);
         expect(finalTx?.status).toBe("completed");
+        expect(finalTx?.completedAt).toBeDefined();
 
         // Verify the number is marked as sold
         const updatedNumber = await db.getRaffleNumberById(number.id);

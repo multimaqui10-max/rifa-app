@@ -597,6 +597,7 @@ function ParticipantsTab() {
                           markAsSoldMutation.mutateAsync({ raffleNumberId: p.raffleNumberId }).then(() => {
                             utils.raffle.getNumbers.invalidate();
                             utils.raffle.getConfig.invalidate();
+                            utils.raffle.getTransactions.invalidate();
                           });
                         }}
                         disabled={markAsSoldMutation.isPending}
