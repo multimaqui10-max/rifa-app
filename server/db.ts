@@ -581,10 +581,6 @@ export async function checkDrawStatus(): Promise<"draw" | "extend" | null> {
     // Si ya fue extendido, no hacer nada más
     if (config.drawStatus === "extended") return null;
 
-    // Verificar si llegó la fecha de sorteo
-    const now = new Date();
-    if (now < config.drawDate) return null;
-
     // Contar números vendidos
     const soldNumbers = await db
       .select()
@@ -592,6 +588,16 @@ export async function checkDrawStatus(): Promise<"draw" | "extend" | null> {
       .where(eq(raffleNumbers.status, "sold"));
 
     const soldPercentage = (soldNumbers.length / config.totalNumbers) * 100;
+
+    // Si se vendieron TODOS los números, ejecutar sorteo inmediatamente sin esperar fecha
+    if (soldNumbers.length === config.totalNumbers) {
+      console.log("[Database] All numbers sold! Ready to draw immediately.");
+      return "draw";
+    }
+
+    // Verificar si llegó la fecha de sorteo
+    const now = new Date();
+    if (now < config.drawDate) return null;
 
     // Si se vendió >= 50%, ejecutar sorteo
     if (soldPercentage >= 50) {

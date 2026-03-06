@@ -743,6 +743,12 @@ function DrawTab() {
             <p>
               <strong>Porcentaje Vendido:</strong> {(drawStatus?.soldPercentage || 0).toFixed(1)}%
             </p>
+            {drawStatus?.soldCount === drawStatus?.totalNumbers && (drawStatus?.totalNumbers ?? 0) > 0 && (
+              <div className="bg-green-100 border border-green-300 rounded p-2 my-2">
+                <p className="text-green-700 font-semibold">✓ ¡TODOS LOS NÚMEROS VENDIDOS!</p>
+                <p className="text-green-600 text-xs">El sorteo puede ejecutarse inmediatamente.</p>
+              </div>
+            )}
             <p>
               <strong>Fecha de Sorteo:</strong> {drawStatus?.config?.drawDate ? new Date(drawStatus.config.drawDate).toLocaleDateString() : "No definida"}
             </p>

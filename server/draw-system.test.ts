@@ -32,3 +32,32 @@ describe("Draw System", () => {
     }
   });
 });
+
+
+describe("Draw System - All Numbers Sold", () => {
+  it("should return 'draw' status when all numbers are sold", async () => {
+    // Get the current config
+    const config = await db.getRaffleConfig();
+    if (!config) {
+      console.log("No config found, skipping test");
+      return;
+    }
+
+    // Get all numbers
+    const allNumbers = await db.getRaffleNumbers();
+    
+    // Mark all numbers as sold
+    for (const num of allNumbers) {
+      await db.updateRaffleNumberStatus(num.id, "sold");
+    }
+
+    // Check draw status - should return "draw" even if date hasn't arrived
+    const status = await db.checkDrawStatus();
+    expect(status).toBe("draw");
+
+    // Reset numbers back to available
+    for (const num of allNumbers) {
+      await db.updateRaffleNumberStatus(num.id, "available");
+    }
+  });
+});
