@@ -185,7 +185,7 @@ export async function updateRaffleNumberStatus(id: number, status: string) {
     updateData.soldAt = new Date();
   } else if (status === "reserved") {
     updateData.reservedAt = new Date();
-    updateData.reservationExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    updateData.reservationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   }
   
   return await db.update(raffleNumbers).set(updateData).where(eq(raffleNumbers.id, id));

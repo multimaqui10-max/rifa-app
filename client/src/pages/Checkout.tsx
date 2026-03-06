@@ -28,6 +28,8 @@ export default function Checkout() {
   const [sessionId] = useState(() => localStorage.getItem("sessionId") || "");
   const [step, setStep] = useState<"info" | "confirmation">("info");
   const [reservationConfirmed, setReservationConfirmed] = useState(false);
+  const [reservationTime, setReservationTime] = useState<number | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ParticipantFormData>({
     resolver: zodResolver(participantSchema),
@@ -40,8 +42,39 @@ export default function Checkout() {
   const createParticipantMutation = trpc.raffle.createParticipant.useMutation();
   const completeTransactionMutation = trpc.raffle.completeTransaction.useMutation();
 
-  // TODO: Implement cleanup when user leaves checkout without completing purchase
-  // For now, reservations will expire automatically after 15 minutes
+  // Timer para mostrar tiempo restante de la reserva
+  useEffect(() => {
+    if (!reservationTime) return;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const remaining = Math.max(0, reservationTime - now);
+      setTimeRemaining(remaining);
+      
+      if (remaining === 0) {
+        clearInterval(interval);
+        toast.error("Tu reserva ha expirado. Por favor, selecciona otro número.");
+        navigate("/");
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [reservationTime, navigate]);
+  
+  const formatTimeRemaining = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  }
 
   const currentNumber = raffleNumber?.find((n) => n.id === raffleNumberId);
   const config = raffleData?.config;
@@ -68,6 +101,9 @@ export default function Checkout() {
           raffleNumberId,
           sessionId,
         });
+        // Set reservation time to 24 hours from now
+        setReservationTime(Date.now() + 24 * 60 * 60 * 1000);
+        setTimeRemaining(24 * 60 * 60 * 1000);
       } catch (reserveError: any) {
         toast.error(reserveError.message || "Este número no está disponible");
         return;
@@ -164,6 +200,14 @@ export default function Checkout() {
             <CardHeader>
               <CardTitle>Información del participante</CardTitle>
               <CardDescription>Completa tus datos para finalizar la compra</CardDescription>
+              {timeRemaining !== null && (
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-900">
+                    <strong>⏱️ Tiempo de reserva:</strong> {formatTimeRemaining(timeRemaining)}
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">Tu número se liberará si no completas la compra a tiempo</p>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
