@@ -68,7 +68,7 @@ export default function Home() {
             <div className="bg-white rounded-lg p-6 shadow-md text-center">
               <h2 className="text-2xl font-bold mb-4 text-purple-900">🎉 ¡GANADOR DEL SORTEO!</h2>
               <div className="space-y-2">
-                <p className="text-lg"><strong>Número Ganador:</strong> <span className="text-3xl font-bold text-accent">{winnerData.winnerNumber}</span></p>
+                <p className="text-lg" style={{color: '#ff0000'}}><strong style={{color: '#ff0000'}}>Número Ganador:</strong> <span className="text-3xl font-bold text-accent" style={{color: '#ff0000'}}>{winnerData.winnerNumber}</span></p>
                 <p className="text-lg"><strong>Ganador:</strong> {winnerData.firstName} {winnerData.lastName}</p>
                 <p className="text-sm text-muted-foreground">Sorteo realizado el {winnerData.drawnAt ? new Date(winnerData.drawnAt).toLocaleDateString('es-CL') : 'N/A'}</p>
               </div>
