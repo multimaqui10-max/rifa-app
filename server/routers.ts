@@ -355,15 +355,21 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // Verify reservation
+        // Check if number is already sold
+        const raffleNumber = await db.getRaffleNumberById(input.raffleNumberId);
+        if (!raffleNumber) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Número no encontrado" });
+        }
+
+        if (raffleNumber.status === "sold") {
+          throw new TRPCError({ code: "CONFLICT", message: "Este número ya fue vendido" });
+        }
+
+        // Try to find reservation if it exists (may have expired)
         const reservation = await db.getReservationByNumberAndSession(
           input.raffleNumberId,
           input.sessionId
         );
-
-        if (!reservation) {
-          throw new TRPCError({ code: "CONFLICT", message: "Número no está reservado" });
-        }
 
         // Create transaction
         const transaction = await db.createTransaction({
@@ -378,8 +384,10 @@ export const appRouter = router({
         // Mark number as sold
         await db.updateRaffleNumberStatus(input.raffleNumberId, "sold");
 
-        // Delete reservation
-        await db.deleteReservation(reservation.id);
+        // Delete reservation if it exists
+        if (reservation) {
+          await db.deleteReservation(reservation.id);
+        }
 
         return { success: true, transaction };
       }),
