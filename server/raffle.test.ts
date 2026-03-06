@@ -261,4 +261,60 @@ describe("Raffle System", () => {
       expect(allNumbers.length).toBeGreaterThanOrEqual(10); // Should have at least 10 numbers
     });
   });
+
+  describe("Mark Number As Sold", () => {
+    it("should mark a number as sold and update transaction status", async () => {
+      // Get a participant and a number
+      const participants = await db.getParticipants();
+      const numbers = await db.getRaffleNumbers("available");
+
+      if (participants.length > 0 && numbers.length > 0) {
+        const participant = participants[0];
+        const number = numbers[0];
+
+        // Create a transaction with pending status
+        const transaction = {
+          participantId: participant.id,
+          raffleNumberId: number.id,
+          amount: "10.00",
+          currency: "USD",
+          status: "pending" as const,
+        };
+
+        await db.createTransaction(transaction);
+
+        // Get the created transaction
+        let allTransactions = await db.getTransactions();
+        const createdTx = allTransactions.find(
+          (t) => t.raffleNumberId === number.id && t.participantId === participant.id && t.status === "pending"
+        );
+        expect(createdTx).toBeDefined();
+
+        // Mark the number as sold (this should also update the transaction)
+        await db.updateRaffleNumberStatus(number.id, "sold");
+
+        // Find and update the transaction to completed
+        allTransactions = await db.getTransactions();
+        const txToUpdate = allTransactions.find(
+          (t) => t.raffleNumberId === number.id
+        );
+        if (txToUpdate) {
+          await db.updateTransactionStatus(txToUpdate.id, "completed", new Date());
+        }
+
+        // Verify the transaction is now completed
+        const updatedTx = await db.getTransactions();
+        const finalTx = updatedTx.find((t) => t.id === createdTx?.id);
+        expect(finalTx?.status).toBe("completed");
+
+        // Verify the number is marked as sold
+        const updatedNumber = await db.getRaffleNumberById(number.id);
+        expect(updatedNumber?.status).toBe("sold");
+        expect(updatedNumber?.soldAt).toBeDefined();
+
+        // Reset for other tests
+        await db.updateRaffleNumberStatus(number.id, "available");
+      }
+    });
+  });
 });

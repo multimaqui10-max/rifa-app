@@ -180,7 +180,16 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
+        // Update number status to sold
         await db.updateRaffleNumberStatus(input.raffleNumberId, "sold");
+        
+        // Find and update associated transaction to completed
+        const allTransactions = await db.getTransactions();
+        const transaction = allTransactions.find(t => t.raffleNumberId === input.raffleNumberId);
+        if (transaction) {
+          await db.updateTransactionStatus(transaction.id, "completed", new Date());
+        }
+        
         return { success: true };
       }),
 
