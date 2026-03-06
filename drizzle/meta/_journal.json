@@ -36,6 +36,13 @@
       "when": 1772670205840,
       "tag": "0004_nosy_falcon",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1772831707474,
+      "tag": "0005_clean_junta",
+      "breakpoints": true
     }
   ]
 }

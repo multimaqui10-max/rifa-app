@@ -37,6 +37,10 @@ export const raffleConfig = mysqlTable("raffleConfig", {
   drawTime: varchar("drawTime", { length: 5 }), // HH:mm format
   totalNumbers: int("totalNumbers").default(1000).notNull(),
   mercadoPagoLink: text("mercadoPagoLink"), // Link de pago de Mercado Pago
+  drawStatus: mysqlEnum("drawStatus", ["pending", "completed", "extended"]).default("pending").notNull(),
+  winnerNumber: int("winnerNumber"), // Número ganador
+  winnerParticipantId: int("winnerParticipantId"), // ID del participante ganador
+  drawnAt: timestamp("drawnAt"), // Fecha y hora del sorteo
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

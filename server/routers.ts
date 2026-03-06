@@ -457,6 +457,55 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  draw: router({
+    checkStatus: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .query(async () => {
+        const status = await db.checkDrawStatus();
+        const config = await db.getRaffleConfig();
+        const soldNumbers = await db.getSoldNumbers();
+        return {
+          status,
+          config,
+          soldCount: soldNumbers.length,
+          totalNumbers: config?.totalNumbers || 0,
+          soldPercentage: config ? (soldNumbers.length / config.totalNumbers) * 100 : 0,
+        };
+      }),
+
+    execute: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        const result = await db.executeDraw();
+        if (!result) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to execute draw" });
+        }
+        return result;
+      }),
+
+    extend: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        const newDate = await db.extendRafflePeriod();
+        return { newDate, success: !!newDate };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

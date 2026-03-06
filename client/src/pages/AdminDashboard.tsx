@@ -33,7 +33,7 @@ type PrizeFormData = z.infer<typeof prizeSchema>;
 export default function AdminDashboard() {
   const [, navigate] = useLocation();
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<"config" | "prizes" | "participants" | "transactions">("config");
+  const [activeTab, setActiveTab] = useState<"config" | "prizes" | "participants" | "transactions" | "draw">("config");
 
   // Check if user is admin
   useEffect(() => {
@@ -81,6 +81,7 @@ export default function AdminDashboard() {
             { id: "prizes", label: "Premios" },
             { id: "participants", label: "Participantes" },
             { id: "transactions", label: "Transacciones" },
+            { id: "draw", label: "Sorteo" },
           ].map((tab) => (
             <Button
               key={tab.id}
@@ -98,6 +99,7 @@ export default function AdminDashboard() {
         {activeTab === "prizes" && <PrizesTab />}
         {activeTab === "participants" && <ParticipantsTab />}
         {activeTab === "transactions" && <TransactionsTab />}
+        {activeTab === "draw" && <DrawTab />}
       </div>
     </div>
   );
@@ -669,6 +671,126 @@ function TransactionsTab() {
               ))}
             </tbody>
           </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+function DrawTab() {
+  const { data: drawStatus, isLoading: checkingStatus } = trpc.draw.checkStatus.useQuery();
+  const executeMutation = trpc.draw.execute.useMutation();
+  const extendMutation = trpc.draw.extend.useMutation();
+
+  const handleExecuteDraw = async () => {
+    try {
+      await executeMutation.mutateAsync();
+      toast.success("Sorteo ejecutado exitosamente");
+    } catch (error) {
+      toast.error("Error al ejecutar el sorteo");
+    }
+  };
+
+  const handleExtend = async () => {
+    try {
+      await extendMutation.mutateAsync();
+      toast.success("Plazo extendido por 30 días");
+    } catch (error) {
+      toast.error("Error al extender el plazo");
+    }
+  };
+
+  if (checkingStatus) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Gestión del Sorteo</CardTitle>
+        <CardDescription>Controla el sorteo automático de la rifa</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Estado Actual */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-3">Estado Actual</h3>
+          <div className="space-y-2 text-sm">
+            <p>
+              <strong>Estado del Sorteo:</strong> {drawStatus?.config?.drawStatus || "pending"}
+            </p>
+            <p>
+              <strong>Números Vendidos:</strong> {drawStatus?.soldCount || 0} / {drawStatus?.totalNumbers || 0}
+            </p>
+            <p>
+              <strong>Porcentaje Vendido:</strong> {(drawStatus?.soldPercentage || 0).toFixed(1)}%
+            </p>
+            <p>
+              <strong>Fecha de Sorteo:</strong> {drawStatus?.config?.drawDate ? new Date(drawStatus.config.drawDate).toLocaleDateString() : "No definida"}
+            </p>
+            {drawStatus?.config?.winnerNumber && (
+              <p className="text-green-700 font-semibold">
+                <strong>Número Ganador:</strong> {drawStatus.config.winnerNumber}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="space-y-3">
+          {drawStatus?.status === "draw" && (
+            <Button
+              onClick={handleExecuteDraw}
+              disabled={executeMutation.isPending}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              {executeMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Ejecutando Sorteo...
+                </>
+              ) : (
+                "Ejecutar Sorteo Ahora"
+              )}
+            </Button>
+          )}
+
+          {drawStatus?.status === "extend" && (
+            <Button
+              onClick={handleExtend}
+              disabled={extendMutation.isPending}
+              className="w-full bg-orange-600 hover:bg-orange-700"
+            >
+              {extendMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Extendiendo...
+                </>
+              ) : (
+                "Extender Plazo 30 Días"
+              )}
+            </Button>
+          )}
+
+          {drawStatus?.status === null && drawStatus?.config?.drawStatus === "completed" && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <p className="text-green-800 font-semibold">✓ Sorteo Completado</p>
+            </div>
+          )}
+        </div>
+
+        {/* Información */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+          <p className="font-semibold mb-2">Reglas del Sorteo:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Si se vende ≥50% de números → Sorteo automático</li>
+            <li>Si se vende &lt;50% de números → Extender 30 días</li>
+            <li>El sorteo elige un número ganador aleatorio de los vendidos</li>
+          </ul>
         </div>
       </CardContent>
     </Card>

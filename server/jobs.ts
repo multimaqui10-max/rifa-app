@@ -1,4 +1,4 @@
-import { cleanupExpiredReservations } from "./db";
+import { cleanupExpiredReservations, checkDrawStatus, executeDraw, extendRafflePeriod } from "./db";
 
 /**
  * Background job to clean up expired reservations
@@ -26,5 +26,25 @@ export async function startBackgroundJobs() {
     }
   }, CLEANUP_INTERVAL);
 
-  console.log("[Jobs] Background jobs started. Cleanup will run every hour.");
+  // Schedule draw check to run every 6 hours
+  const DRAW_CHECK_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+
+  setInterval(async () => {
+    try {
+      console.log("[Jobs] Checking if draw should be executed...");
+      const status = await checkDrawStatus();
+      
+      if (status === "draw") {
+        console.log("[Jobs] Executing draw...");
+        await executeDraw();
+      } else if (status === "extend") {
+        console.log("[Jobs] Extending raffle period...");
+        await extendRafflePeriod();
+      }
+    } catch (error) {
+      console.error("[Jobs] Failed to check draw status:", error);
+    }
+  }, DRAW_CHECK_INTERVAL);
+
+  console.log("[Jobs] Background jobs started. Cleanup will run every hour, draw check every 6 hours.");
 }

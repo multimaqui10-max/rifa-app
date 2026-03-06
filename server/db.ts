@@ -554,3 +554,162 @@ export async function adjustTotalNumbers(newTotal: number): Promise<void> {
     throw error;
   }
 }
+
+
+/**
+ * Verifica si se debe ejecutar el sorteo o extender el plazo
+ * Retorna: "draw" (ejecutar sorteo), "extend" (extender 30 días), o null (no hacer nada)
+ */
+export async function checkDrawStatus(): Promise<"draw" | "extend" | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const config = await getRaffleConfig();
+    if (!config) return null;
+
+    // Si ya fue sorteado, no hacer nada
+    if (config.drawStatus === "completed") return null;
+
+    // Si ya fue extendido, no hacer nada más
+    if (config.drawStatus === "extended") return null;
+
+    // Verificar si llegó la fecha de sorteo
+    const now = new Date();
+    if (now < config.drawDate) return null;
+
+    // Contar números vendidos
+    const soldNumbers = await db
+      .select()
+      .from(raffleNumbers)
+      .where(eq(raffleNumbers.status, "sold"));
+
+    const soldPercentage = (soldNumbers.length / config.totalNumbers) * 100;
+
+    // Si se vendió >= 50%, ejecutar sorteo
+    if (soldPercentage >= 50) {
+      return "draw";
+    }
+
+    // Si se vendió < 50%, extender 30 días
+    return "extend";
+  } catch (error) {
+    console.error("[Database] Failed to check draw status:", error);
+    return null;
+  }
+}
+
+/**
+ * Ejecuta el sorteo: elige un número ganador aleatorio de los vendidos
+ */
+export async function executeDraw(): Promise<{ winnerNumber: number; winnerParticipantId: number } | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const config = await getRaffleConfig();
+    if (!config) return null;
+
+    // Obtener todos los números vendidos
+    const soldNumbers = await db
+      .select()
+      .from(raffleNumbers)
+      .where(eq(raffleNumbers.status, "sold"));
+
+    if (soldNumbers.length === 0) {
+      console.log("[Database] No sold numbers to draw from");
+      return null;
+    }
+
+    // Seleccionar uno aleatorio
+    const randomIndex = Math.floor(Math.random() * soldNumbers.length);
+    const winnerRaffleNumber = soldNumbers[randomIndex];
+
+    // Obtener el participante que compró este número
+    const transaction = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.raffleNumberId, winnerRaffleNumber.id))
+      .limit(1);
+
+    if (!transaction || transaction.length === 0) {
+      console.log("[Database] No transaction found for winner number");
+      return null;
+    }
+
+    const winnerParticipantId = transaction[0].participantId;
+
+    // Actualizar la configuración con el ganador
+    await db.update(raffleConfig)
+      .set({
+        drawStatus: "completed",
+        winnerNumber: winnerRaffleNumber.number,
+        winnerParticipantId,
+        drawnAt: new Date(),
+      })
+      .where(eq(raffleConfig.id, config.id));
+
+    console.log(`[Database] Draw executed: Winner is number ${winnerRaffleNumber.number}, participant ${winnerParticipantId}`);
+
+    return {
+      winnerNumber: winnerRaffleNumber.number,
+      winnerParticipantId,
+    };
+  } catch (error) {
+    console.error("[Database] Failed to execute draw:", error);
+    throw error;
+  }
+}
+
+/**
+ * Extiende el plazo de la rifa por 30 días
+ */
+export async function extendRafflePeriod(): Promise<Date | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const config = await getRaffleConfig();
+    if (!config) return null;
+
+    // Calcular nueva fecha (30 días después)
+    const newDrawDate = new Date(config.drawDate);
+    newDrawDate.setDate(newDrawDate.getDate() + 30);
+
+    // Actualizar configuración
+    await db.update(raffleConfig)
+      .set({
+        drawDate: newDrawDate,
+        drawStatus: "extended",
+      })
+      .where(eq(raffleConfig.id, config.id));
+
+    console.log(`[Database] Raffle extended until ${newDrawDate.toISOString()}`);
+
+    return newDrawDate;
+  } catch (error) {
+    console.error("[Database] Failed to extend raffle period:", error);
+    throw error;
+  }
+}
+
+
+/**
+ * Obtiene todos los números vendidos
+ */
+export async function getSoldNumbers() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const soldNumbers = await db
+      .select()
+      .from(raffleNumbers)
+      .where(eq(raffleNumbers.status, "sold"));
+
+    return soldNumbers;
+  } catch (error) {
+    console.error("[Database] Failed to get sold numbers:", error);
+    return [];
+  }
+}
