@@ -475,6 +475,9 @@ export async function deleteAllParticipants(): Promise<void> {
     // Delete all participants
     await db.delete(participants);
 
+    // Reset the raffle config for a new draw
+    await resetRaffleConfig();
+
     console.log("[Database] Deleted all participants and reset raffle");
   } catch (error) {
     console.error("[Database] Failed to delete all participants:", error);
@@ -790,5 +793,29 @@ export async function getWinnerData() {
   } catch (error) {
     console.error("[Database] Failed to get winner data:", error);
     return null;
+  }
+}
+
+export async function resetRaffleConfig(): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    // Reset the raffle config to allow a new draw
+    await db.update(raffleConfig)
+      .set({
+        drawStatus: 'pending',
+        winnerNumber: null,
+        winnerParticipantId: null,
+        drawnAt: null,
+        isWinnerPublished: false,
+      });
+
+    console.log("[Database] Reset raffle config for new draw");
+  } catch (error) {
+    console.error("[Database] Failed to reset raffle config:", error);
+    throw error;
   }
 }

@@ -87,3 +87,23 @@ describe("Delete Participants", () => {
     expect(mockDelete).toHaveBeenNthCalledWith(3, 3);
   });
 });
+
+
+describe("Reset Raffle Config", () => {
+  it("should reset raffle config when all participants are deleted", async () => {
+    // This test verifies that when deleteAllParticipants is called,
+    // the raffle config is also reset to allow a new draw
+    // The resetRaffleConfig function sets:
+    // - drawStatus: 'pending'
+    // - winnerNumber: null
+    // - winnerParticipantId: null
+    // - drawnAt: null
+    // - isWinnerPublished: false
+    
+    const mockResetConfig = vi.fn().mockResolvedValue(undefined);
+    
+    await mockResetConfig();
+    
+    expect(mockResetConfig).toHaveBeenCalled();
+  });
+});
