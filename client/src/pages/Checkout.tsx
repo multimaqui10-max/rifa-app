@@ -293,7 +293,7 @@ export default function Checkout() {
               <CardContent className="space-y-4">
                 <div className="bg-accent/10 rounded-lg p-4 text-center">
                   <p className="text-sm text-muted-foreground mb-2">Número seleccionado</p>
-                  <p className="text-5xl font-bold text-accent">{currentNumber.number}</p>
+                  <p className="text-5xl font-bold text-accent" style={{color: '#ff0000'}}>{currentNumber.number}</p>
                 </div>
 
                 <div className="space-y-2 border-t border-border pt-4">
@@ -310,9 +310,9 @@ export default function Checkout() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
                   <p className="font-semibold mb-1">Información importante:</p>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>Tu número será reservado por 15 minutos</li>
+                    <li>Tu número será reservado por 24 horas</li>
                     <li>Debes completar el pago para confirmar la compra</li>
-                    <li>Recibirás un email de confirmación</li>
+                    <li>Pasado el tiempo de reserva si no ha sido confirmado el pago el número quedara disponible</li>
                   </ul>
                 </div>
               </CardContent>
