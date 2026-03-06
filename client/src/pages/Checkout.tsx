@@ -43,6 +43,21 @@ export default function Checkout() {
   const completeTransactionMutation = trpc.raffle.completeTransaction.useMutation();
 
   // Timer para mostrar tiempo restante de la reserva
+  // Handle return from Mercado Pago payment
+  useEffect(() => {
+    const pendingTransaction = localStorage.getItem('pendingTransaction');
+    if (pendingTransaction && step === 'info') {
+      const transaction = JSON.parse(pendingTransaction);
+      completeTransactionMutation.mutateAsync(transaction).then(() => {
+        localStorage.removeItem('pendingTransaction');
+        setStep('confirmation');
+        toast.success('¡Compra completada exitosamente!');
+      }).catch((error) => {
+        console.error('Error completing transaction:', error);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!reservationTime) return;
     

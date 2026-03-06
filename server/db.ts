@@ -311,6 +311,13 @@ export async function getReservationsBySession(sessionId: string) {
   return await db.select().from(reservations).where(eq(reservations.sessionId, sessionId));
 }
 
+export async function getAllReservations() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(reservations);
+}
+
 export async function getParticipantsWithNumbers() {
   const db = await getDb();
   if (!db) return [];

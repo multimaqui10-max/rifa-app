@@ -183,11 +183,31 @@ export const appRouter = router({
         // Update number status to sold
         await db.updateRaffleNumberStatus(input.raffleNumberId, "sold");
         
-        // Find and update associated transaction to completed
+        // Find and update associated transaction to completed, or create one if it doesn't exist
         const allTransactions = await db.getTransactions();
-        const transaction = allTransactions.find(t => t.raffleNumberId === input.raffleNumberId);
+        const transaction = allTransactions.find((t: any) => t.raffleNumberId === input.raffleNumberId);
+        
         if (transaction) {
+          // Update existing transaction
           await db.updateTransactionStatus(transaction.id, "completed", new Date());
+        } else {
+          // If no transaction, try to find participant from reservations
+          const allReservations = await db.getAllReservations();
+          const reservation = allReservations.find((r: any) => r.raffleNumberId === input.raffleNumberId);
+          
+          if (reservation && reservation.participantId) {
+            // Create a new transaction for this participant
+            const config = await db.getRaffleConfig();
+            const price = config?.numberPrice || "0";
+            await db.createTransaction({
+              participantId: reservation.participantId,
+              raffleNumberId: input.raffleNumberId,
+              amount: price as any,
+              currency: "USD",
+              status: "completed",
+              completedAt: new Date(),
+            });
+          }
         }
         
         return { success: true };
