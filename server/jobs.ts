@@ -31,15 +31,15 @@ export async function startBackgroundJobs() {
 
   setInterval(async () => {
     try {
-      console.log("[Jobs] Checking if draw should be executed...");
+      console.log("[Jobs] Checking if draw should be extended...");
       const status = await checkDrawStatus();
       
-      if (status === "draw") {
-        console.log("[Jobs] Executing draw...");
-        await executeDraw();
-      } else if (status === "extend") {
-        console.log("[Jobs] Extending raffle period...");
+      // Only auto-extend if less than 50% sold, don't auto-execute draw
+      if (status === "extend") {
+        console.log("[Jobs] Extending raffle period (less than 50% sold)...");
         await extendRafflePeriod();
+      } else if (status === "draw") {
+        console.log("[Jobs] Draw is ready to be executed manually by admin");
       }
     } catch (error) {
       console.error("[Jobs] Failed to check draw status:", error);

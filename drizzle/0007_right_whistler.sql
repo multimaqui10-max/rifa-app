@@ -1,0 +1,1 @@
+ALTER TABLE `raffleConfig` ADD `isDrawManual` boolean DEFAULT true NOT NULL;

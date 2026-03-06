@@ -50,6 +50,13 @@
       "when": 1772832476427,
       "tag": "0006_dizzy_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1772833204757,
+      "tag": "0007_right_whistler",
+      "breakpoints": true
     }
   ]
 }

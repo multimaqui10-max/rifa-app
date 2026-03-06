@@ -764,10 +764,10 @@ function DrawTab() {
               {executeMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Ejecutando Sorteo...
+                  Lanzando Rifa...
                 </>
               ) : (
-                "Ejecutar Sorteo Ahora"
+                "Lanzar Rifa"
               )}
             </Button>
           )}
