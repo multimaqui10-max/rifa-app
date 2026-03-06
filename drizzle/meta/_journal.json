@@ -43,6 +43,13 @@
       "when": 1772831707474,
       "tag": "0005_clean_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1772832476427,
+      "tag": "0006_dizzy_jack_power",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `raffleConfig` ADD `isWinnerPublished` boolean DEFAULT false NOT NULL;

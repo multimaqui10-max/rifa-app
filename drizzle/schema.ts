@@ -41,6 +41,7 @@ export const raffleConfig = mysqlTable("raffleConfig", {
   winnerNumber: int("winnerNumber"), // Número ganador
   winnerParticipantId: int("winnerParticipantId"), // ID del participante ganador
   drawnAt: timestamp("drawnAt"), // Fecha y hora del sorteo
+  isWinnerPublished: boolean("isWinnerPublished").default(false).notNull(), // Si el ganador ha sido publicado
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -505,6 +505,25 @@ export const appRouter = router({
         const newDate = await db.extendRafflePeriod();
         return { newDate, success: !!newDate };
       }),
+
+    publishWinner: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user?.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        const success = await db.publishWinner();
+        if (!success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to publish winner" });
+        }
+        return { success };
+      }),
+
+    getWinner: publicProcedure.query(async () => {
+      return await db.getWinnerData();
+    }),
   }),
 });
 

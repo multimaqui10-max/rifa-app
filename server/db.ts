@@ -713,3 +713,69 @@ export async function getSoldNumbers() {
     return [];
   }
 }
+
+
+/**
+ * Publica el ganador de la rifa
+ */
+export async function publishWinner(): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    const config = await getRaffleConfig();
+    if (!config || !config.winnerNumber) {
+      console.log("[Database] No winner to publish");
+      return false;
+    }
+
+    // Actualizar configuración para marcar ganador como publicado
+    await db.update(raffleConfig)
+      .set({ isWinnerPublished: true })
+      .where(eq(raffleConfig.id, config.id));
+
+    console.log(`[Database] Winner published: Number ${config.winnerNumber}`);
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to publish winner:", error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene los datos del ganador incluyendo participante
+ */
+export async function getWinnerData() {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const config = await getRaffleConfig();
+    if (!config || !config.winnerParticipantId) {
+      return null;
+    }
+
+    // Obtener datos del participante ganador
+    const winner = await db
+      .select()
+      .from(participants)
+      .where(eq(participants.id, config.winnerParticipantId))
+      .limit(1);
+
+    if (!winner || winner.length === 0) {
+      return null;
+    }
+
+    return {
+      winnerNumber: config.winnerNumber,
+      firstName: winner[0].firstName,
+      lastName: winner[0].lastName,
+      email: winner[0].email,
+      isPublished: config.isWinnerPublished,
+      drawnAt: config.drawnAt,
+    };
+  } catch (error) {
+    console.error("[Database] Failed to get winner data:", error);
+    return null;
+  }
+}

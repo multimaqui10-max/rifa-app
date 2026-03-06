@@ -679,9 +679,11 @@ function TransactionsTab() {
 
 
 function DrawTab() {
-  const { data: drawStatus, isLoading: checkingStatus } = trpc.draw.checkStatus.useQuery();
+  const { data: drawStatus, isLoading: checkingStatus, refetch: refetchStatus } = trpc.draw.checkStatus.useQuery();
   const executeMutation = trpc.draw.execute.useMutation();
   const extendMutation = trpc.draw.extend.useMutation();
+  const publishMutation = trpc.draw.publishWinner.useMutation();
+  const { data: winnerData } = trpc.draw.getWinner.useQuery();
 
   const handleExecuteDraw = async () => {
     try {
@@ -696,8 +698,19 @@ function DrawTab() {
     try {
       await extendMutation.mutateAsync();
       toast.success("Plazo extendido por 30 días");
+      refetchStatus();
     } catch (error) {
       toast.error("Error al extender el plazo");
+    }
+  };
+
+  const handlePublishWinner = async () => {
+    try {
+      await publishMutation.mutateAsync();
+      toast.success("Ganador publicado exitosamente");
+      refetchStatus();
+    } catch (error) {
+      toast.error("Error al publicar el ganador");
     }
   };
 
@@ -777,8 +790,34 @@ function DrawTab() {
           )}
 
           {drawStatus?.status === null && drawStatus?.config?.drawStatus === "completed" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <p className="text-green-800 font-semibold">✓ Sorteo Completado</p>
+            <div className="space-y-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-green-800 font-semibold mb-3">✓ Sorteo Completado</p>
+                {winnerData && (
+                  <div className="space-y-2 text-sm">
+                    <p><strong>Número Ganador:</strong> {winnerData.winnerNumber}</p>
+                    <p><strong>Ganador:</strong> {winnerData.firstName} {winnerData.lastName}</p>
+                    <p><strong>Email:</strong> {winnerData.email}</p>
+                    <p><strong>Estado:</strong> {winnerData.isPublished ? "Publicado" : "No publicado"}</p>
+                  </div>
+                )}
+              </div>
+              {winnerData && !winnerData.isPublished && (
+                <Button
+                  onClick={handlePublishWinner}
+                  disabled={publishMutation.isPending}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                >
+                  {publishMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Publicando...
+                    </>
+                  ) : (
+                    "Publicar Ganador"
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </div>

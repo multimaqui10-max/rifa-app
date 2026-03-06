@@ -22,6 +22,7 @@ export default function Home() {
 
   const { data: raffleData, isLoading: isLoadingRaffle } = trpc.raffle.getConfig.useQuery();
   const { data: numbers, isLoading: isLoadingNumbers } = trpc.raffle.getNumbers.useQuery({});
+  const { data: winnerData } = trpc.draw.getWinner.useQuery();
   const reserveNumberMutation = trpc.raffle.reserveNumber.useMutation();
 
   const config = raffleData?.config;
@@ -59,6 +60,22 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {/* Winner Section - if published */}
+      {winnerData?.isPublished && (
+        <section className="bg-gradient-to-r from-purple-100 to-pink-100 border-b border-purple-200">
+          <div className="container py-8">
+            <div className="bg-white rounded-lg p-6 shadow-md text-center">
+              <h2 className="text-2xl font-bold mb-4 text-purple-900">🎉 ¡GANADOR DEL SORTEO!</h2>
+              <div className="space-y-2">
+                <p className="text-lg"><strong>Número Ganador:</strong> <span className="text-3xl font-bold text-accent">{winnerData.winnerNumber}</span></p>
+                <p className="text-lg"><strong>Ganador:</strong> {winnerData.firstName} {winnerData.lastName}</p>
+                <p className="text-sm text-muted-foreground">Sorteo realizado el {winnerData.drawnAt ? new Date(winnerData.drawnAt).toLocaleDateString('es-CL') : 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Hero Section */}
       <section className="container py-12 sm:py-16 lg:py-20">
