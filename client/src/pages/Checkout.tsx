@@ -46,17 +46,25 @@ export default function Checkout() {
   // Handle return from Mercado Pago payment
   useEffect(() => {
     const pendingTransaction = localStorage.getItem('pendingTransaction');
-    if (pendingTransaction && step === 'info') {
+    if (pendingTransaction && step === 'info' && raffleNumberId) {
       const transaction = JSON.parse(pendingTransaction);
-      completeTransactionMutation.mutateAsync(transaction).then(() => {
+      // Only complete transaction if it matches the current number
+      if (transaction.raffleNumberId === raffleNumberId) {
+        completeTransactionMutation.mutateAsync(transaction).then(() => {
+          localStorage.removeItem('pendingTransaction');
+          setStep('confirmation');
+          toast.success('¡Compra completada exitosamente!');
+        }).catch((error) => {
+          console.error('Error completing transaction:', error);
+          // Clear the pending transaction if it fails
+          localStorage.removeItem('pendingTransaction');
+        });
+      } else {
+        // Clear mismatched pending transaction
         localStorage.removeItem('pendingTransaction');
-        setStep('confirmation');
-        toast.success('¡Compra completada exitosamente!');
-      }).catch((error) => {
-        console.error('Error completing transaction:', error);
-      });
+      }
     }
-  }, []);
+  }, [raffleNumberId]);
 
   useEffect(() => {
     if (!reservationTime) return;
