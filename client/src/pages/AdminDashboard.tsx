@@ -124,8 +124,13 @@ function ConfigTab() {
     if (raffleData?.config) {
       const configData = raffleData.config as any;
       if (configData.drawDate) {
+        // Handle date without timezone conversion
+        // Get the date in the local timezone
         const date = new Date(configData.drawDate);
-        configData.drawDate = date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        configData.drawDate = `${year}-${month}-${day}`;
       }
       reset(configData);
     }
@@ -133,12 +138,19 @@ function ConfigTab() {
 
   const onSubmit = async (data: any) => {
     try {
+      // Convert date string to timestamp at midnight UTC
+      let drawDate: Date | undefined;
+      if (data.drawDate) {
+        // Parse the date string (format: YYYY-MM-DD) and create a Date at midnight UTC
+        const [year, month, day] = data.drawDate.split('-').map(Number);
+        drawDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+      }
       await updateConfigMutation.mutateAsync({
         raffleTitle: data.raffleTitle,
         raffleDescription: data.raffleDescription,
         numberPrice: data.numberPrice,
         totalNumbers: data.totalNumbers ? parseInt(data.totalNumbers) : undefined,
-        drawDate: data.drawDate ? new Date(data.drawDate) : undefined,
+        drawDate: drawDate,
         drawTime: data.drawTime,
         mercadoPagoLink: data.mercadoPagoLink,
       });
