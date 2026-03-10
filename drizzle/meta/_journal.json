@@ -57,6 +57,13 @@
       "when": 1772833204757,
       "tag": "0007_right_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1773108165156,
+      "tag": "0008_talented_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }
