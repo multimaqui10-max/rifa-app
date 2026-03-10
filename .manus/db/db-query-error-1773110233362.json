@@ -1,0 +1,8 @@
+{
+  "query": "\n-- Primero, verificar si el usuario ya existe\nSELECT * FROM \"user\" WHERE \"openId\" = 'admin-rifa-001';\n\n-- Si no existe, crear el usuario admin\nINSERT INTO \"user\" (\n  \"openId\",\n  \"name\",\n  \"email\",\n  \"role\",\n  \"loginMethod\",\n  \"lastSignedIn\",\n  \"createdAt\",\n  \"updatedAt\"\n) VALUES (\n  'admin-rifa-001',\n  'Admin',\n  'admin@rifa.local',\n  'admin',\n  'test',\n  NOW(),\n  NOW(),\n  NOW()\n) ON CONFLICT (\"openId\") DO UPDATE SET\n  \"lastSignedIn\" = NOW(),\n  \"updatedAt\" = NOW();\n\n-- Verificar que el usuario fue creado\nSELECT * FROM \"user\" WHERE \"openId\" = 'admin-rifa-001';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Rbvib6AeBPHQrB7.5eb37e76da24 --database NVWWBsUs5VZQ62ceyyEnaA --execute \n-- Primero, verificar si el usuario ya existe\nSELECT * FROM \"user\" WHERE \"openId\" = 'admin-rifa-001';\n\n-- Si no existe, crear el usuario admin\nINSERT INTO \"user\" (\n  \"openId\",\n  \"name\",\n  \"email\",\n  \"role\",\n  \"loginMethod\",\n  \"lastSignedIn\",\n  \"createdAt\",\n  \"updatedAt\"\n) VALUES (\n  'admin-rifa-001',\n  'Admin',\n  'admin@rifa.local',\n  'admin',\n  'test',\n  NOW(),\n  NOW(),\n  NOW()\n) ON CONFLICT (\"openId\") DO UPDATE SET\n  \"lastSignedIn\" = NOW(),\n  \"updatedAt\" = NOW();\n\n-- Verificar que el usuario fue creado\nSELECT * FROM \"user\" WHERE \"openId\" = 'admin-rifa-001';\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 20 near \"\"user\" WHERE \"openId\" = 'admin-rifa-001'\""
+  ]
+}
