@@ -1,0 +1,10 @@
+{
+  "query": "INSERT INTO \"users\" (\"openId\", \"name\", \"email\", \"loginMethod\", \"role\", \"createdAt\", \"updatedAt\", \"lastSignedIn\") \nVALUES ('admin-test-001', 'Admin', 'admin@test.com', 'manual', 'admin', NOW(), NOW(), NOW())\nON CONFLICT (\"openId\") DO UPDATE SET \"role\" = 'admin', \"updatedAt\" = NOW();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Rbvib6AeBPHQrB7.5eb37e76da24 --database NVWWBsUs5VZQ62ceyyEnaA --execute INSERT INTO \"users\" (\"openId\", \"name\", \"email\", \"loginMethod\", \"role\", \"createdAt\", \"updatedAt\", \"lastSignedIn\") \nVALUES ('admin-test-001', 'Admin', 'admin@test.com', 'manual', 'admin', NOW(), NOW(), NOW())\nON CONFLICT (\"openId\") DO UPDATE SET \"role\" = 'admin', \"updatedAt\" = NOW();",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near \"\"users\" (\"openId\", \"name\", \"email\", \"loginMethod\", \"role\", \"createdAt\", \"updatedAt\", \"lastSignedIn\") ",
+    "VALUES ('admin-test-001', 'Admin', 'admin@test.com', 'manual', 'admin', NOW(), NOW(), NOW())",
+    "ON CONFLICT (\"openId\") DO UPDATE SET \"role\" = 'admin', \"updatedAt\" = NOW()\""
+  ]
+}
