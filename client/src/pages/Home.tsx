@@ -8,6 +8,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useLocation } from "wouter";
+import { getLoginUrl } from "@/const";
 
 export default function Home() {
   const { user } = useAuth();
@@ -49,15 +50,32 @@ export default function Home() {
             <Ticket className="w-8 h-8 text-accent" />
             <h1 className="text-2xl font-bold gradient-text">{config?.raffleTitle || "Mi Rifa"}</h1>
           </div>
-          {user && user.role === "admin" && (
-            <Button
-              onClick={() => navigate("/admin")}
-              variant="outline"
-              className="border-accent text-accent hover:bg-accent/10"
-            >
-              Panel Admin
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {user && user.role === "admin" && (
+              <Button
+                onClick={() => navigate("/admin")}
+                variant="outline"
+                className="border-accent text-accent hover:bg-accent/10"
+              >
+                Panel Admin
+              </Button>
+            )}
+            {user ? (
+              <Button
+                onClick={() => (window.location.href = "/api/auth/logout")}
+                variant="outline"
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                onClick={() => (window.location.href = getLoginUrl())}
+                className="bg-accent hover:bg-accent/90"
+              >
+                Login
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
